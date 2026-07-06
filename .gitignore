@@ -1,0 +1,10 @@
+target/
+.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+*.log
+Results.html
+**/resources/traces/
+
+### VS Code ###
+.vscode/
