@@ -1,21 +1,18 @@
 package io.github.clamentos.bpsim.parser.readers;
 
 ///
-import io.github.clamentos.bpsim.parser.TraceConfiguration;
-import io.github.clamentos.bpsim.simulation.SimulationType;
+import io.github.clamentos.bpsim.simulation.configuration.SimulationType;
+import io.github.clamentos.bpsim.simulation.configuration.TraceConfiguration;
 import io.github.clamentos.bpsim.traces.DirectionAndTargetTraceEntry;
 import io.github.clamentos.bpsim.traces.TraceEntry;
-
-///..
-import java.io.IOException;
 
 ///
 public final class DirectionAndTargetTraceReader extends TraceReader {
 
     ///
-    public DirectionAndTargetTraceReader(final String filePath, final TraceConfiguration traceRadixes, final int bufferSize) throws IOException {
+    public DirectionAndTargetTraceReader(final String filePath, final TraceConfiguration traceConfiguration, final int readerBufferSize) {
 
-        super(filePath, traceRadixes, bufferSize);
+        super(filePath, traceConfiguration, readerBufferSize);
     }
 
     ///

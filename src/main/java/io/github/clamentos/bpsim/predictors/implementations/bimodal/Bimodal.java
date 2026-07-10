@@ -1,96 +1,56 @@
 package io.github.clamentos.bpsim.predictors.implementations.bimodal;
 
 ///
-import io.github.clamentos.bpsim.predictors.CollisionTracker;
 import io.github.clamentos.bpsim.predictors.Prediction;
 import io.github.clamentos.bpsim.predictors.Predictor;
-import io.github.clamentos.bpsim.traces.DirectionTraceEntry;
+import io.github.clamentos.bpsim.predictors.implementations.components.BimodalBuildingBlock;
 import io.github.clamentos.bpsim.traces.TraceEntry;
-import io.github.clamentos.bpsim.utils.Utils;
 
 ///
 public final class Bimodal implements Predictor<Byte> {
 
-    ///
-    private final int counterSize;
-    private final int startingBias;
-
-    ///..
-    private final int maxCounterValue;
-    private final int takenThreshold;
-    private final long addressMask;
-
-    ///..
-    private final byte[] saturatingCounters;
-    private final CollisionTracker collisionTracker;
-
-    ///..
-    private final Prediction<Byte> predictionHolder;
+///
+    private final BimodalBuildingBlock innerBimodal;
 
     ///
-    public Bimodal(final int counterSize, final int startingBias, final int tableSizeInBits) {
+    public Bimodal(final int counterSize, final int startingBias, final int tableSizeInBits, final boolean speculativeTraining, final int delayCycles) {
 
-        this.counterSize = counterSize;
-        this.startingBias = startingBias;
-
-        maxCounterValue = Math.unsignedPowExact(2, counterSize) - 1;
-        takenThreshold = (maxCounterValue + 1) / 2;
-        addressMask = Utils.calculateMask(tableSizeInBits);
-
-        saturatingCounters = new byte[Math.unsignedPowExact(2, tableSizeInBits)];
-        for(int i = 0; i < saturatingCounters.length; i++) saturatingCounters[i] = (byte)startingBias;
-        collisionTracker = new CollisionTracker(saturatingCounters.length);
-
-        predictionHolder = new Prediction<>(false, Integer.MIN_VALUE, false, (byte)0);
+        innerBimodal = new BimodalBuildingBlock(counterSize, startingBias, tableSizeInBits, speculativeTraining, delayCycles);
     }
 
     ///
     @Override
-    public Prediction<Byte> predict(final TraceEntry traceEntry) {
+    public Prediction<Byte> predict(final TraceEntry traceEntry,final int delayCycle) {
 
-        final int index = (int)(traceEntry.getAddress() & addressMask);
-        final byte counterValue = saturatingCounters[index];
-        final long collisionCounter = collisionTracker.update(index, counterValue);
-
-        predictionHolder.setTaken(counterValue >= takenThreshold);
-        predictionHolder.setCollided(collisionCounter > 1);
-        predictionHolder.setContext(counterValue);
-
-        return predictionHolder;
+        return innerBimodal.predict(traceEntry, delayCycle);
     }
 
     ///..
     @Override
-    public void train(final TraceEntry traceEntry, final Prediction<Byte> context) {
+    public void train(final TraceEntry traceEntry, final Prediction<Byte> context,final int delayCycle) {
 
-        final DirectionTraceEntry directionTraceEntry = (DirectionTraceEntry)traceEntry;
-        final int index = (int)(traceEntry.getAddress() & addressMask);
-        final byte originalValue = context.getContext();
-
-        saturatingCounters[index] = this.saturate(originalValue, directionTraceEntry.isTaken());
+        innerBimodal.train(traceEntry, context, delayCycle);
     }
 
     ///..
     @Override
     public String getDescription() {
 
-        return "Bimodal(" + saturatingCounters.length + ", " + counterSize + " BCs, bias: " + startingBias + ")";
+        return innerBimodal.getDescription();
     }
 
     ///..
     @Override
-    public int getStorageCost() {
+    public long getStorageCost() {
 
-        return saturatingCounters.length * counterSize;
+        return innerBimodal.getStorageCost();
     }
 
-    ///.
-    private byte saturate(final byte value, final boolean direction) {
+    ///..
+    @Override
+    public boolean doesSupportDelay() {
 
-        if(direction && value < maxCounterValue) return (byte)(value + 1);
-        else if(value > 0) return (byte)(value - 1);
-
-        return value;
+        return innerBimodal.isSpeculativeTraining();
     }
 
     ///

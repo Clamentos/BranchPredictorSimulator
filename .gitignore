@@ -4,7 +4,7 @@ target/
 !**/src/test/**/target/
 *.log
 Results.html
-**/resources/traces/
-
+traces/
+SimulationSetup.jsonc
 ### VS Code ###
 .vscode/

@@ -1,4 +1,4 @@
-package io.github.clamentos.bpsim.simulation;
+package io.github.clamentos.bpsim.simulation.configuration;
 
 ///
 public enum SimulationType {

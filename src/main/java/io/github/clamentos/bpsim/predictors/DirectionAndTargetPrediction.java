@@ -9,10 +9,11 @@ import lombok.Setter;
 @Setter
 
 ///
-public abstract class Prediction<T> {
+public final class DirectionAndTargetPrediction<T> extends Prediction<T> {
 
     ///
-    private T context;
+    private boolean isTaken;
+    private long target;
 
     ///
 }

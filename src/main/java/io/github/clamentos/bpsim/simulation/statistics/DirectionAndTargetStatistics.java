@@ -1,6 +1,8 @@
 package io.github.clamentos.bpsim.simulation.statistics;
 
 ///
+import io.github.clamentos.bpsim.predictors.DirectionAndTargetPrediction;
+import io.github.clamentos.bpsim.predictors.Prediction;
 import io.github.clamentos.bpsim.traces.DirectionAndTargetTraceEntry;
 import io.github.clamentos.bpsim.traces.TraceEntry;
 
@@ -13,9 +15,9 @@ public final class DirectionAndTargetStatistics extends Statistics {
     private final StatisticsEntry overallEntry;
 
     ///
-    public DirectionAndTargetStatistics(final String predictorName, final String traceName) {
+    public DirectionAndTargetStatistics(final String predictorDescription, final String traceName) {
 
-        super(predictorName, traceName);
+        super(predictorDescription, traceName);
 
         directionEntry = new StatisticsEntry();
         targetEntry = new StatisticsEntry();
@@ -24,17 +26,20 @@ public final class DirectionAndTargetStatistics extends Statistics {
 
     ///
     @Override
-    public void update(final TraceEntry traceEntry, final boolean isPredictedTaken, final long predictedTarget) {
+    public void update(final TraceEntry traceEntry, final Prediction<?> prediction) {
 
         final DirectionAndTargetTraceEntry directionAndTargetTraceEntry = (DirectionAndTargetTraceEntry)traceEntry;
+        final DirectionAndTargetPrediction<?> directionAndTargetPrediction = (DirectionAndTargetPrediction<?>)prediction;
+        final boolean isDirectionCorrect = directionAndTargetTraceEntry.isTaken() == directionAndTargetPrediction.isTaken();
+        final boolean isTargetCorrect = directionAndTargetTraceEntry.getTarget() == directionAndTargetPrediction.getTarget();
 
-        if(directionAndTargetTraceEntry.isTaken() == isPredictedTaken) directionEntry.correct();
+        if(isDirectionCorrect) directionEntry.correct();
         else directionEntry.incorrect();
 
-        if(directionAndTargetTraceEntry.getTarget() == predictedTarget) targetEntry.correct();
+        if(isTargetCorrect) targetEntry.correct();
         else targetEntry.incorrect();
 
-        if(directionAndTargetTraceEntry.isTaken() == isPredictedTaken && directionAndTargetTraceEntry.getTarget() == predictedTarget) overallEntry.correct();
+        if(isDirectionCorrect && isTargetCorrect) overallEntry.correct();
         else overallEntry.incorrect();
     }
 

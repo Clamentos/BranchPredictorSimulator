@@ -1,4 +1,4 @@
-package io.github.clamentos.bpsim.parser;
+package io.github.clamentos.bpsim.simulation.configuration;
 
 ///
 import lombok.AllArgsConstructor;

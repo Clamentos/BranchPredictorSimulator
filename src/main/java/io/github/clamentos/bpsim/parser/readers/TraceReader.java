@@ -1,15 +1,18 @@
 package io.github.clamentos.bpsim.parser.readers;
 
 ///
-import io.github.clamentos.bpsim.parser.TraceConfiguration;
+import io.github.clamentos.bpsim.simulation.configuration.TraceConfiguration;
 import io.github.clamentos.bpsim.traces.TraceEntry;
+import io.github.clamentos.bpsim.utils.Constants;
 
 ///..
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 ///..
 import lombok.Getter;
@@ -31,44 +34,43 @@ public abstract class TraceReader implements AutoCloseable {
     @Getter private final String traceName;
 
     ///..
-    private BufferedReader reader;
+    private final Map<Thread, BufferedReader> readers;
 
     ///
-    protected TraceReader(final String filePath, final TraceConfiguration traceRadixes, final int bufferSize) throws IOException {
+    protected TraceReader(final String filePath, final TraceConfiguration traceConfiguration, final int readerBufferSize) {
 
         this.filePath = filePath;
-        this.bufferSize = bufferSize;
+        this.bufferSize = readerBufferSize;
 
-        separator = traceRadixes != null ? traceRadixes.getSeparator() : ",";
+        separator = traceConfiguration != null ? traceConfiguration.getSeparator() : Constants.DEFAULT_TRACE_SEPARATOR;
 
-        addressRadix = traceRadixes != null ? traceRadixes.getAddressRadix() : 16;
-        targetRadix = traceRadixes != null ? traceRadixes.getTargetRadix() : 16;
+        addressRadix = traceConfiguration != null ? traceConfiguration.getAddressRadix() : Constants.DEFAULT_TRACE_ADDRESS_RADIX;
+        targetRadix = traceConfiguration != null ? traceConfiguration.getTargetRadix() : Constants.DEFAULT_TRACE_TARGET_RADIX;
         traceName = Path.of(filePath).getFileName().toString();
 
-        reader = new BufferedReader(new FileReader(filePath), bufferSize);
+        readers = new ConcurrentHashMap<>();
     }
 
     ///
     @Override
     public void close() throws IOException {
 
-        reader.close();
+        for(final BufferedReader reader : readers.values()) reader.close();
     }
 
     ///..
-    public TraceEntry readTraceEntry() throws IOException, IllegalArgumentException, NumberFormatException {
+    public TraceEntry readTraceEntry(final Thread thread) throws IOException, IllegalArgumentException, NumberFormatException {
 
-        final String line = reader.readLine();
+        final String line = readers.get(thread).readLine();
 
         if(line == null) return null;
-        return this.parseTraceEntry(this.split(line));
+        return this.parseTraceEntry(line.split(separator));
     }
 
     ///..
-    public void reset() throws IOException {
+    public void reserveStream() throws IOException {
 
-        reader.close();
-        reader = new BufferedReader(new FileReader(filePath), bufferSize);
+        readers.put(Thread.currentThread(), new BufferedReader(new FileReader(filePath), bufferSize));
     }
 
     ///.
@@ -78,12 +80,6 @@ public abstract class TraceReader implements AutoCloseable {
     protected boolean isTaken(final String value) {
 
         return isTakenValues.contains(value);
-    }
-
-    ///.
-    private String[] split(final String line) {
-
-        return line.split(separator);
     }
 
     ///

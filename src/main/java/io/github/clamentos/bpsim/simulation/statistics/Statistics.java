@@ -14,28 +14,18 @@ import lombok.Getter;
 public abstract class Statistics {
 
     ///
-    private final String predictorName;
+    private final String predictorDescription;
     private final String traceName;
 
-    ///..
-    private int conflicts;
-
     ///
-    protected Statistics(final String predictorName, final String traceName) {
+    protected Statistics(final String predictorDescription, final String traceName) {
 
-        this.predictorName = predictorName;
+        this.predictorDescription = predictorDescription;
         this.traceName = traceName;
     }
 
     ///
-    public void update(final TraceEntry traceEntry, final Prediction<?> prediction) {
-
-        if(prediction.isCollided()) conflicts++;
-        this.update(traceEntry, prediction.isTaken(), prediction.getTarget());
-    }
-
-    ///.
-    protected abstract void update(final TraceEntry traceEntry, final boolean isPredictedTaken, final long predictedTarget);
+    public abstract void update(final TraceEntry traceEntry, final Prediction<?> prediction);
 
     ///
 }

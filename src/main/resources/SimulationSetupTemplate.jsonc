@@ -1,0 +1,77 @@
+{
+    // Mandatory
+    "simulationType": "DIRECTION | TARGET | DIRECTION_AND_TARGET",
+
+    // Mandatory, must be at least 1 (which signifies train in the same cycle as predict)
+    "delayCycles": 1,
+
+    // Optional, defaults to 65536
+    "readerBufferSize": 8192,
+
+    // Mandatory (either "traceNames" or "customTracePattern" must exist)
+    // If FILE_DRIVEN: "traceNames", else "customTracePattern"
+    "traceArguments": {
+
+        // Mandatory
+        "traceGenerationMode": "FILE_DRIVEN | CUSTOM",
+
+        // Depends. If used, specifies which traces to use (regex)
+        // If * is used, must be the only element
+        "traceNames": ["*"],
+
+        // Optional. Is tied to "traceNames" (defaults to radix 16 and , as separator if omitted)
+        // Key -> value based, where key is the desired trace by name
+        "traceConfigurations": {
+
+            // Mandatory
+            "myTraceName": {
+
+                // Mandatory, greater than 1
+                "addressRadix": 16,
+
+                // Mandatory, greater than 1
+                "targetRadix": 16,
+
+                // Mandatory
+                "separator": ","
+            }
+
+            // ...
+        },
+
+        // Depends. If used, must have at least 1 element
+        "customTracePatterns": [
+
+            {
+                // Mandatory
+                "type": "RANDOM | EXPLICIT",
+
+                // If RANDOM: needed, else omit
+                "length": 8,
+
+                // If EXPLICIT: needed, else omit
+                "value": "00010110"
+            }
+
+            // ...
+        ]
+    },
+
+    // Mandatory (at least 1 predictor)
+    "predictorDefinitions": [
+
+        {
+            // Mandatory
+            "CLASS": "Static",
+
+            // Optional, depends on predictor
+            "arguments": {
+
+                "predictTaken": true
+                // ...
+            }
+        }
+
+        // ...
+    ]
+}

@@ -7,10 +7,11 @@ import io.github.clamentos.bpsim.traces.TraceEntry;
 public interface Predictor<T> {
 
     ///
-    Prediction<T> predict(final TraceEntry traceEntry);
-    void train(final TraceEntry traceEntry, final Prediction<T> context);
+    Prediction<T> predict(final TraceEntry traceEntry, final int delayCycle);
+    void train(final TraceEntry traceEntry, final Prediction<T> context, final int delayCycle);
     String getDescription();
-    int getStorageCost();
+    long getStorageCost();
+    boolean doesSupportDelay();
 
     ///
 }
